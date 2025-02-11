@@ -1067,7 +1067,13 @@ select::-ms-expand {
         updateStats();
     
 
-        addButton.addEventListener('click', addTask);
+        addButton.addEventListener('click', async (e) => {
+            try {
+                await addTask();
+            } catch (error) {
+                console.error('Error adding task:', error);
+            }
+        });
         taskInput.addEventListener('keypress', (e) => e.key === 'Enter' && addTask());
         filterButtons.forEach(btn => btn.addEventListener('click', applyFilter));
         sortSelect.addEventListener('change', (e) => {
@@ -1239,8 +1245,10 @@ select::-ms-expand {
                 taskTextSpan.textContent = task.text;
             }
     
-            prioritySpan.addEventListener('dblclick', (e) => {
+            const originalPrioritySpan = prioritySpan.cloneNode(true);
+            prioritySpan.addEventListener('dblclick', function handler(e) {
                 e.stopPropagation();
+                prioritySpan.removeEventListener('dblclick', handler);
                 const select = createPrioritySelect(task.priority, (newValue) => {
                     task.priority = newValue;
                     saveTasks();
@@ -1456,7 +1464,6 @@ select::-ms-expand {
                         hideSubtaskInput();
                         updateParentTaskCompletion(task.id, false);
                         saveTasks(); 
-                        renderTasks(); 
                 
                     }
                 } else if (!keepOpen) {
