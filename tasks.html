@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+    --primary: #7c3aed;
+    --primary-hover: #6d28d9;
+    --primary-hove-opacityr: #4c2c9461;
+    --background: #1a1a1a;
+    --surface: #2d2d2d;
+    --surface-hover: #3d3d3d;
+    --text: #ffffff;
+    --text-secondary: #a0a0a0;
+    --danger: #dc2626;
+    --danger-hover: #b91c1c;
+    --success: #10b981;
+    --low-priority: #3b82f6;
+    --medium-priority: #f59e0b;
+    --high-priority: #ef4444;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background-color: var(--background);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--surface);
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.stats {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.input-area {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+#task-input {
+    padding: 0.8rem 1rem;
+    background: var(--background);
+    border: 2px solid #3d3d3d;
+    border-radius: 0.5rem;
+    color: var(--text);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+#task-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+}
+
+#priority-select, #due-date {
+    padding: 0.8rem;
+    background: var(--background);
+    border: 2px solid #3d3d3d;
+    border-radius: 0.5rem;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.glow-button {
+    padding: 0.8rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary), #6d28d9);
+    border: none;
+    border-radius: 0.5rem;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.glow-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
+}
+
+.filters {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.5rem 1rem;
+    background: var(--background);
+    border: none;
+    border-radius: 0.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-btn.active {
+    background: var(--primary);
+    color: white;
+}
+
+#task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 0.5rem;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    padding: 1.2rem;
+    background: var(--background);
+    border-radius: 0.8rem;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    align-items: stretch;
+    cursor: pointer;
+}
+
+.task-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.task-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: 0.8rem 0 0 0.8rem;
+    background: var(--surface);
+    transition: background-color 0.2s ease;
+}
+
+.task-item.low::before { background: var(--low-priority); }
+.task-item.medium::before { background: var(--medium-priority); }
+.task-item.high::before { background: var(--high-priority); }
+
+.task-item.completed::before {
+    background: var(--success);
+    opacity: 0.7;
+}
+
+.task-item.completed {
+    opacity: 0.8;
+    background: rgba(255, 255, 255, 0.03);
+    box-shadow: none;
+}
+
+.task-item.completed:hover {
+    opacity: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.task-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-right: 1rem;
+}
+
+.task-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.task-text {
+    font-size: 1.1rem;
+    padding: 0.3rem 0.5rem;
+    border-radius: 0.3rem;
+    transition: all 0.2s ease;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+}
+
+.task-text:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.task-text:focus {
+    background: rgba(255, 255, 255, 0.05);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.3);
+}
+
+.subtask-text-edit {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.3);
+    background: var(--surface-hover);
+    outline: none;
+    color: var(--text);
+    border-radius: 0.3rem;
+    padding: 0.2rem;
+}
+
+.task-details {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    align-items: center;
+}
+
+.priority-select, .due-date-input {
+    padding: 0.3rem;
+    background: #33303d;
+    border: 1px solid #3d3d3d;
+    border-radius: 0.3rem;
+    color: var(--text);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.priority-select:focus, .due-date-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.priority {
+    padding: 0.3rem 0.8rem;
+    border-radius: 1rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+.priority.low { background: rgba(59, 130, 246, 0.2); color: var(--low-priority); }
+.priority.medium { background: rgba(245, 158, 11, 0.2); color: var(--medium-priority); }
+.priority.high { background: rgba(239, 68, 68, 0.2); color: var(--high-priority); }
+
+.due-date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    transition: all 0.2s ease;
+}
+
+.due-date:hover {
+    background: rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+}
+
+.task-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: auto;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.task-actions button {
+    padding: 0.6rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 3rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.task-actions button:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+}
+
+.task-actions .delete-btn:hover {
+    background: rgba(220, 38, 38, 0.1);
+    color: var(--danger);
+}
+
+.task-actions .edit-btn:hover {
+    background: rgba(124, 58, 237, 0.1);
+    color: var(--primary);
+}
+
+.completed .task-text {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+/* Add responsive design */
+@media (max-width: 768px) {
+    .container { padding: 1rem; }
+    .input-area { grid-template-columns: 1fr; }
+}
+
+/* Modal Styles */
+.modal, .modal-content, .modal-header, .close-modal, .form-group, .form-row {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: relative;
+    background-color: var(--surface);
+    margin: 50px auto;
+    padding: 2rem;
+    border-radius: 1rem;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 0.8rem;
+    background: var(--background);
+    border: 2px solid #3d3d3d;
+    border-radius: 0.5rem;
+    color: var(--text);
+    font-size: 1rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.subtasks-section {
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+}
+
+.subtasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.subtask-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 0.3rem;
+    width: fit-content;
+}
+.subtask-item:hover {
+    scale: 1.01;
+    background: #4c2c9442;
+    box-shadow: 0px 0px 0px 1px #7c3aed9c;
+}
+
+.subtask-checkbox {
+    cursor: pointer;
+}
+
+.subtask-item.completed .subtask-text {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.add-subtask-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.3rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.3rem;
+}
+
+.add-subtask-btn:hover {
+    color: var(--primary);
+}
+
+.subtask-input-container {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.subtask-input {
+    flex-grow: 1;
+    padding: 0.3rem 0.5rem;
+    background: var(--background);
+    border: 1px solid #3d3d3d;
+    border-radius: 0.3rem;
+    color: var(--text);
+    font-size: 0.9rem;
+}
+.subtask-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+    color: var(--text);
+}
+
+.subtask-input-actions {
+    display: flex;
+    gap: 0.3rem;
+}
+
+.subtask-input-actions button {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.3rem;
+    border-radius: 0.3rem;
+}
+
+.save-subtask-btn:hover {
+    color: var(--success);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.cancel-subtask-btn:hover {
+    color: var(--danger);
+    background: rgba(220, 38, 38, 0.1);
+}
+
+.delete-subtask-btn {
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.subtask-item:hover .delete-subtask-btn {
+    opacity: 1;
+}
+
+/* Add styles for subtasks in main task list */
+.subtasks-preview {
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+    border-left: 2px solid var(--surface-hover);
+}
+
+.subtask-preview-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.subtask-preview-item.completed {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.modal-footer {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Show modal */
+.modal.show {
+    display: block;
+}
+
+/* Add these styles after the .filters styles */
+#sort-select {
+    padding: 0.5rem;
+    background: var(--background);
+    border: 2px solid #3d3d3d;
+    border-radius: 0.5rem;
+    color: var(--text);
+    cursor: pointer;
+    min-width: 150px;
+}
+
+#sort-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+}
+
+.sort-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sort-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Update delete subtask button to match cancel button style */
+.delete-subtask-btn {
+    opacity: 0;
+    transition: opacity 0.2s;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.3rem;
+    border-radius: 0.3rem;
+}
+
+.delete-subtask-btn:hover {
+    color: var(--danger);
+    background: rgba(220, 38, 38, 0.1);
+}
+
+.subtask-item:hover .delete-subtask-btn {
+    opacity: 1;
+}
+
+/* Add to your existing CSS - this styles the priority span */
+.task-details .priority {
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.3rem;
+    font-weight: 600;
+    margin-right: 0.5rem; /* Add some spacing */
+    cursor: pointer;
+}
+
+.task-details .priority.low {
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--low-priority);
+}
+
+.task-details .priority.medium {
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--medium-priority);
+}
+
+.task-details .priority.high {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--high-priority);
+}
+
+/* Make sure the editable task text looks good */
+.task-text {
+    font-size: 1rem;
+    padding: 0.3rem 0.5rem;
+    border-radius: 0.3rem;
+    transition: background-color 0.2s;
+    /* Remove display: block; */
+    /* Remove width: 100%; */
+}
+
+/* Add to existing subtask styles */
+.subtask-actions {
+    display: flex;
+    gap: 0.3rem;
+    margin-left: 10px;
+}
+
+.edit-subtask-btn {
+    opacity: 0;
+    transition: opacity 0.2s;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.2rem;
+}
+
+.subtask-item:hover .edit-subtask-btn {
+    opacity: 1;
+}
+
+.edit-subtask-btn:hover {
+    color: var(--success);
+}
+
+/* Add this after the existing .subtask-item styles */
+.subtask-item.editing {
+    background: none !important;
+    box-shadow: none !important;
+    scale: 1 !important;
+}
+
+.subtask-item.editing .delete-subtask-btn,
+.subtask-item.editing .edit-subtask-btn {
+    opacity: 0 !important;
+    pointer-events: none;
+}
+
+/* Add these styles after the .filters styles */
+.search-container {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+#search-input {
+    flex-grow: 1;
+    padding: 0.8rem 1rem;
+    background: var(--background);
+    border: 2px solid #3d3d3d;
+    border-radius: 0.5rem;
+    color: var(--text);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+#search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+}
+
+#clear-search {
+    padding: 0.8rem;
+    aspect-ratio: 1/1;
+    display: none;
+}
+
+#clear-search.visible {
+    display: block;
+}
+
+/* Add these styles for the search match highlighting */
+.search-match {
+    background: var(--primary);
+    border-radius: 0.2rem;
+    font-weight: 500;
+}
+
+/* Add these styles after the existing .task-item styles */
+.task-checkbox {
+    position: relative;
+    width: 1.4rem;
+    height: 1.4rem;
+    margin-right: 1.2rem;
+    cursor: pointer;
+    appearance: none;
+    border: 2px solid var(--text-secondary);
+    border-radius: 0.4rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.task-checkbox::after {
+    content: '';
+    position: absolute;
+    width: 0.7rem;
+    height: 0.4rem;
+    border: 2px solid var(--surface);
+    border-top: none;
+    border-right: none;
+    transform: rotate(-45deg);
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.task-checkbox:hover {
+    border-color: var(--primary);
+    transform: scale(1.1);
+}
+
+.task-checkbox:checked {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.task-checkbox:checked::after {
+    opacity: 1;
+}
+
+.task-checkbox:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+}
+
+.task-item.completed .task-checkbox {
+    background: var(--success);
+    border-color: var(--success);
+}
+
+.task-item.completed .task-checkbox::after {
+    border-color: var(--surface);
+}
+
+.task-text-edit {
+    background: var(--surface-hover);
+    outline: none;
+    border: 2px solid var(--primary);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+    color: var(--text);
+    border-radius: 0.3rem;
+    padding: 0.3rem 0.5rem;
+    font-size: 1rem;
+    width: 100%;
+    transition: all 0.2s ease;
+}
+
+.task-text-edit:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.3);
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-tasks"></i> Task Manager</h1>
+            <div class="stats">
+                <span id="total-tasks">0 tasks</span>
+                <span id="completed-tasks">0 completed</span>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="task-input" placeholder="What needs to be done?">
+            <select id="priority-select">
+                <option value="low">Low Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="high">High Priority</option>
+            </select>
+            <input type="date" id="due-date">
+            <button id="add-button" class="glow-button">
+                <i class="fas fa-plus"></i> Add Task
+            </button>
+        </div>
+
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="active">Active</button>
+            <button class="filter-btn" data-filter="completed">Completed</button>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Search tasks...">
+            <button id="clear-search" class="glow-button" title="Clear search">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div id="task-list"></div>
+
+        <!-- Add this modal structure -->
+        <div id="task-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Task Details</h2>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="modal-task-title">Title</label>
+                        <input type="text" id="modal-task-title">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-task-description">Description</label>
+                        <textarea id="modal-task-description" rows="3"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="modal-priority-select">Priority</label>
+                            <select id="modal-priority-select">
+                                <option value="low">Low Priority</option>
+                                <option value="medium">Medium Priority</option>
+                                <option value="high">High Priority</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal-due-date">Due Date</label>
+                            <input type="date" id="modal-due-date">
+                        </div>
+                    </div>
+                    <div class="subtasks-section">
+                        <h3>Subtasks</h3>
+                        <div class="subtask-input-group">
+                            <input type="text" id="subtask-input" placeholder="Add a subtask and press Enter">
+                            <button id="add-subtask-btn" class="glow-button">Add</button>
+                        </div>
+                        <ul id="subtasks-list"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>document.addEventListener('DOMContentLoaded', function() {
+        const taskInput = document.getElementById('task-input');
+        const addButton = document.getElementById('add-button');
+        const taskList = document.getElementById('task-list');
+        const prioritySelect = document.getElementById('priority-select');
+        const dueDateInput = document.getElementById('due-date');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const totalTasksSpan = document.getElementById('total-tasks');
+        const completedTasksSpan = document.getElementById('completed-tasks');
+        const searchInput = document.getElementById('search-input');
+        const clearSearchButton = document.getElementById('clear-search');
+    
+        // Create sort select with a wrapper div
+        const sortWrapper = document.createElement('div');
+        sortWrapper.className = 'sort-wrapper';
+        
+        const sortLabel = document.createElement('span');
+        sortLabel.textContent = 'Sort by: ';
+        sortLabel.className = 'sort-label';
+        
+        const sortSelect = document.createElement('select');
+        sortSelect.id = 'sort-select';
+        sortSelect.innerHTML = `
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="priority">Priority</option>
+            <option value="dueDate">Due Date</option>
+            <option value="alphabetical">Alphabetical</option>
+        `;
+    
+        // Add the elements to the filters div
+        const filtersDiv = document.querySelector('.filters');
+        sortWrapper.appendChild(sortLabel);
+        sortWrapper.appendChild(sortSelect);
+        filtersDiv.appendChild(sortWrapper);
+    
+        let tasks = loadTasks();
+        let currentFilter = 'all';
+        let currentSort = 'newest';
+        let openSubtaskTaskId = null;
+        let isAddingSubtask = false;
+        let searchQuery = '';
+    
+        renderTasks();
+        updateStats();
+    
+        // Event Listeners
+        addButton.addEventListener('click', addTask);
+        taskInput.addEventListener('keypress', (e) => e.key === 'Enter' && addTask());
+        filterButtons.forEach(btn => btn.addEventListener('click', applyFilter));
+        sortSelect.addEventListener('change', (e) => {
+            currentSort = e.target.value;
+            renderTasks();
+        });
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase();
+            if (searchQuery) {
+                clearSearchButton.classList.add('visible');
+            } else {
+                clearSearchButton.classList.remove('visible');
+            }
+            renderTasks();
+        });
+        clearSearchButton.addEventListener('click', () => {
+            searchInput.value = '';
+            searchQuery = '';
+            clearSearchButton.classList.remove('visible');
+            renderTasks();
+        });
+    
+        function addTask() {
+            const taskText = taskInput.value.trim();
+            if (!taskText) return;
+    
+            const newTask = {
+                id: Date.now(),
+                text: taskText,
+                completed: false,
+                priority: prioritySelect.value,
+                dueDate: dueDateInput.value,
+                createdAt: new Date().toISOString(),
+                subtasks: [] // Initialize empty subtasks array
+            };
+    
+            tasks.unshift(newTask);
+            saveTasks();
+            renderTasks();
+            updateStats();
+            clearInputs();
+        }
+    
+        function renderTasks() {
+            taskList.innerHTML = '';
+            let filteredTasks = tasks.filter(task => {
+                // First filter by current filter
+                if (currentFilter === 'active' && task.completed) return false;
+                if (currentFilter === 'completed' && !task.completed) return false;
+                
+                // Then filter by search query
+                if (searchQuery) {
+                    const matchesText = task.text.toLowerCase().includes(searchQuery);
+                    const matchesSubtasks = task.subtasks?.some(subtask => 
+                        subtask.text.toLowerCase().includes(searchQuery)
+                    );
+                    return matchesText || matchesSubtasks;
+                }
+                return true;
+            });
+    
+            // Sort tasks based on current sort option
+            filteredTasks.sort((a, b) => {
+                switch (currentSort) {
+                    case 'newest':
+                        return b.createdAt.localeCompare(a.createdAt);
+                    case 'oldest':
+                        return a.createdAt.localeCompare(b.createdAt);
+                    case 'priority':
+                        const priorityOrder = { high: 0, medium: 1, low: 2 };
+                        return priorityOrder[a.priority] - priorityOrder[b.priority];
+                    case 'dueDate':
+                        if (!a.dueDate) return 1;
+                        if (!b.dueDate) return -1;
+                        return new Date(a.dueDate) - new Date(b.dueDate);
+                    case 'alphabetical':
+                        return a.text.localeCompare(b.text);
+                    default:
+                        return 0;
+                }
+            });
+    
+            filteredTasks.forEach(task => {
+                const taskElement = createTaskElement(task);
+                taskList.appendChild(taskElement);
+            });
+        }
+    
+        function createTaskElement(task) {
+            const taskItem = document.createElement('li');
+            taskItem.className = `task-item ${task.completed ? 'completed' : ''} ${task.priority}`;
+            taskItem.dataset.taskId = task.id;
+    
+            taskItem.innerHTML = `
+                <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
+                <div class="task-content">
+                    <div class="task-main">
+                        <span class="task-text">${task.text}</span>
+                        <div class="task-details">
+                            <span class="priority ${task.priority}">${task.priority}</span>
+                            <span class="due-date">
+                                ${task.dueDate ? `<i class="far fa-calendar-alt"></i> ${formatDate(task.dueDate)}` : '<i class="far fa-calendar-alt"></i> Add Date'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="subtasks-section">
+                        <div class="subtasks-list">
+                            ${(task.subtasks || []).map(subtask => `
+                                <div class="subtask-item ${subtask.completed ? 'completed' : ''}" data-subtask-id="${subtask.id}">
+                                    <input type="checkbox" class="subtask-checkbox" ${subtask.completed ? 'checked' : ''}>
+                                    <span class="subtask-text">${subtask.text}</span>
+                                    <div class="subtask-actions">
+                                        <button class="edit-subtask-btn" title="Edit"><i class="fas fa-edit"></i></button>
+                                        <button class="delete-subtask-btn" title="Delete"><i class="fas fa-times"></i></button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <button class="add-subtask-btn" title="Add Subtask"><i class="fas fa-plus"></i> Add Subtask</button>
+                        <div class="subtask-input-container" style="display: none;">
+                            <input type="text" class="subtask-input" placeholder="Enter subtask">
+                            <div class="subtask-input-actions">
+                                <button class="save-subtask-btn"><i class="fas fa-check"></i></button>
+                                <button class="cancel-subtask-btn"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="task-actions">
+                    <button class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            `;
+    
+            const checkbox = taskItem.querySelector('.task-checkbox');
+            const taskTextSpan = taskItem.querySelector('.task-text');
+            const prioritySpan = taskItem.querySelector('.priority');
+            const dueDateSpan = taskItem.querySelector('.due-date');
+            const deleteBtn = taskItem.querySelector('.delete-btn');
+            const addSubtaskBtn = taskItem.querySelector('.add-subtask-btn');
+            const subtaskInputContainer = taskItem.querySelector('.subtask-input-container');
+            const subtaskInput = taskItem.querySelector('.subtask-input');
+            const saveSubtaskBtn = taskItem.querySelector('.save-subtask-btn');
+            const cancelSubtaskBtn = taskItem.querySelector('.cancel-subtask-btn');
+    
+            // Modify the task text display to highlight matches
+            if (searchQuery) {
+                const regex = new RegExp(`(${searchQuery})`, 'gi');
+                taskTextSpan.innerHTML = task.text.replace(regex, '<span class="search-match">$1</span>');
+                
+                // Highlight matches in subtasks
+                const subtaskItems = taskItem.querySelectorAll('.subtask-text');
+                subtaskItems.forEach(subtaskText => {
+                    const subtask = task.subtasks.find(st => st.text === subtaskText.textContent);
+                    if (subtask && subtask.text.toLowerCase().includes(searchQuery)) {
+                        subtaskText.innerHTML = subtask.text.replace(regex, '<span class="search-match">$1</span>');
+                    }
+                });
+            } else {
+                taskTextSpan.textContent = task.text;
+            }
+    
+            // Double click to edit priority
+            prioritySpan.addEventListener('dblclick', () => {
+                const select = createPrioritySelect(task.priority, (newValue) => {
+                    task.priority = newValue;
+                    saveTasks();
+                    renderTasks();
+                });
+                prioritySpan.replaceWith(select);
+                select.focus();
+    
+                // Add blur event listener
+                select.addEventListener('blur', () => {
+                    saveTasks();
+                    renderTasks();
+                });
+            });
+    
+            // Single click to add date when none exists
+            if (!task.dueDate) {
+                dueDateSpan.addEventListener('click', () => {
+                    const input = createDateInput('', (newValue) => {
+                        task.dueDate = newValue;
+                        saveTasks();
+                        renderTasks();
+                    });
+                    dueDateSpan.replaceWith(input);
+                    input.focus();
+                    setTimeout(() => input.showPicker(), 10);
+    
+                    // Add blur event listener
+                    input.addEventListener('blur', () => {
+                        saveTasks();
+                        renderTasks();
+                    });
+                });
+            } else {
+                // Double click to edit existing date
+                dueDateSpan.addEventListener('dblclick', () => {
+                    const input = createDateInput(task.dueDate, (newValue) => {
+                        task.dueDate = newValue;
+                        saveTasks();
+                        renderTasks();
+                    });
+                    dueDateSpan.replaceWith(input);
+                    input.focus();
+    
+                    // Add blur event listener
+                    input.addEventListener('blur', () => {
+                        saveTasks();
+                        renderTasks();
+                    });
+                });
+            }
+    
+            // Event listeners
+            checkbox.addEventListener('change', () => toggleComplete(task.id));
+            deleteBtn.addEventListener('click', () => deleteTask(task.id));
+    
+            // Subtask functionality
+            addSubtaskBtn.addEventListener('click', () => {
+                openSubtaskTaskId = task.id;
+                addSubtaskBtn.style.display = 'none';
+                subtaskInputContainer.style.display = 'flex';
+                subtaskInput.focus();
+            });
+    
+            function saveSubtask(keepOpen = false) {
+                const subtaskText = subtaskInput.value.trim();
+                console.log("saveSubtask called, keepOpen:", keepOpen); // Debug 1
+    
+                if (subtaskText) {
+                    if (!task.subtasks) task.subtasks = [];
+                    const newSubtaskId = Date.now();
+                    const newSubtask = {  // Create the subtask object
+                        id: newSubtaskId,
+                        text: subtaskText,
+                        completed: false
+                    };
+                    task.subtasks.push(newSubtask); // Add to the task's subtasks array
+                    console.log("New subtask added:", newSubtask); // Debug 2
+    
+                    subtaskInput.value = '';
+    
+                    if (keepOpen) {
+                        console.log("keepOpen is true"); // Debug 3
+                        const subtasksList = taskItem.querySelector('.subtasks-list');
+                        const newSubtaskElement = document.createElement('div'); // Create the DOM element
+                        newSubtaskElement.className = `subtask-item`;
+                        newSubtaskElement.dataset.subtaskId = newSubtaskId;
+                        newSubtaskElement.innerHTML = `
+                            <input type="checkbox" class="subtask-checkbox">
+                            <span class="subtask-text">${subtaskText}</span>
+                            <div class="subtask-actions">
+                                <button class="edit-subtask-btn" title="Edit"><i class="fas fa-edit"></i></button>
+                                <button class="delete-subtask-btn" title="Delete"><i class="fas fa-times"></i></button>
+                            </div>
+                        `;
+                        subtasksList.appendChild(newSubtaskElement); // Add to the DOM
+    
+                        // Add event listeners to the new subtask *element*
+                        const subtaskTextElem = newSubtaskElement.querySelector('.subtask-text');
+                        const subtaskCheckbox = newSubtaskElement.querySelector('.subtask-checkbox');
+                        const deleteBtn = newSubtaskElement.querySelector('.delete-subtask-btn');
+                        const editBtn = newSubtaskElement.querySelector('.edit-subtask-btn');
+    
+                        // Checkbox and text click handlers
+                        newSubtaskElement.addEventListener('click', (event) => {
+                            // Prevent event from bubbling up to the parent task item
+                            event.stopPropagation();
+    
+                            // Only toggle if the click wasn't on the edit/delete buttons
+                            if (!event.target.closest('.subtask-actions')) {
+                                toggleSubtaskComplete(task.id, newSubtaskId);
+                            }
+                        });
+    
+                        // Delete button handler
+                        deleteBtn.addEventListener('click', () => {
+                            deleteSubtask(task.id, newSubtaskId);
+                        });
+    
+                        // Edit button handler
+                        editBtn.addEventListener('click', (e) => {
+                            const subtaskItem = e.target.closest('.subtask-item');
+                            subtaskItem.classList.add('editing');
+                            
+                            const subtaskId = parseInt(subtaskItem.dataset.subtaskId);
+                            const subtaskTextElem = subtaskItem.querySelector('.subtask-text');
+                            const currentText = subtaskTextElem.textContent;
+                            
+                            const input = document.createElement('input');
+                            input.type = 'text';
+                            input.value = currentText;
+                            input.className = 'subtask-text-edit';
+                            
+                            input.addEventListener('blur', () => {
+                                subtaskItem.classList.remove('editing');
+                                const newText = input.value.trim();
+                                if (newText) {
+                                    const subtask = task.subtasks.find(st => st.id === subtaskId);
+                                    if (subtask) {
+                                        subtask.text = newText;
+                                        saveTasks();
+                                        renderTasks();
+                                    }
+                                }
+                            });
+                            
+                            input.addEventListener('keypress', (e) => {
+                                if (e.key === 'Enter') {
+                                    input.blur();
+                                }
+                            });
+                            
+                            subtaskTextElem.replaceWith(input);
+                            input.focus();
+                        });
+    
+                        //  Update parent task completion *AFTER* adding to the DOM.
+                        updateParentTaskCompletion(task.id, true);  // Add true to skip render
+                        console.log("Parent task updated and saved (keepOpen).");
+    
+                        // Maintain focus on the input
+                        setTimeout(() => {
+                            subtaskInput.focus();
+                            console.log("Refocused subtask input"); // Debug 8
+                        }, 0);
+    
+                    } else {
+                        console.log("keepOpen is false"); // Debug 5
+                        openSubtaskTaskId = null;
+                        hideSubtaskInput();
+                        updateParentTaskCompletion(task.id, false);
+                        saveTasks(); // Save after updating
+                        renderTasks(); // Re-render the entire list
+                        console.log("Parent task updated, saved, and rendered."); // Debug 6
+                    }
+                } else if (!keepOpen) {
+                    console.log("Subtask text empty and keepOpen is false"); // Debug 7
+                    hideSubtaskInput();
+                }
+            }
+    
+            function hideSubtaskInput() {
+                subtaskInput.value = '';
+                subtaskInputContainer.style.display = 'none';
+                addSubtaskBtn.style.display = 'block';
+                if (openSubtaskTaskId === task.id) {
+                    openSubtaskTaskId = null;
+                }
+            }
+    
+            subtaskInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveSubtask(true);
+                }
+                if (e.key === 'Escape') {
+                    hideSubtaskInput();
+                }
+            });
+    
+            saveSubtaskBtn.addEventListener('click', () => {
+                saveSubtask();
+            });
+    
+            cancelSubtaskBtn.addEventListener('click', () => {
+                isAddingSubtask = false;
+                hideSubtaskInput();
+            });
+    
+            document.addEventListener('click', (e) => {
+                if (!subtaskInputContainer.contains(e.target) &&
+                    !addSubtaskBtn.contains(e.target) &&
+                    subtaskInputContainer.style.display !== 'none') {
+                    const subtaskText = subtaskInput.value.trim();
+                    if (subtaskText) {
+                        saveSubtask(false);
+                    } else {
+                        hideSubtaskInput();
+                    }
+                }
+            });
+    
+            if (openSubtaskTaskId === task.id) {
+                subtaskInputContainer.style.display = 'flex';
+                addSubtaskBtn.style.display = 'none';
+            }
+    
+            const subtaskItems = taskItem.querySelectorAll('.subtask-item');
+            subtaskItems.forEach(item => {
+                item.addEventListener('click', (event) => {
+                    // Prevent event from bubbling up to the parent task item
+                    event.stopPropagation();
+    
+                    const subtaskId = parseInt(item.dataset.subtaskId);
+    
+                    // Only toggle if the click wasn't on the edit/delete buttons
+                    if (!event.target.closest('.subtask-actions')) {
+                        toggleSubtaskComplete(task.id, subtaskId);
+                    }
+                });
+            });
+            taskItem.querySelectorAll('.delete-subtask-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const subtaskId = parseInt(e.target.closest('.subtask-item').dataset.subtaskId);
+                    deleteSubtask(task.id, subtaskId);
+                });
+            });
+            taskItem.querySelectorAll('.edit-subtask-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const subtaskItem = e.target.closest('.subtask-item');
+                    subtaskItem.classList.add('editing');
+                    
+                    const subtaskId = parseInt(subtaskItem.dataset.subtaskId);
+                    const subtaskTextElem = subtaskItem.querySelector('.subtask-text');
+                    const currentText = subtaskTextElem.textContent;
+                    
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = currentText;
+                    input.className = 'subtask-text-edit';
+                    
+                    input.addEventListener('blur', () => {
+                        subtaskItem.classList.remove('editing');
+                        const newText = input.value.trim();
+                        if (newText) {
+                            const subtask = task.subtasks.find(st => st.id === subtaskId);
+                            if (subtask) {
+                                subtask.text = newText;
+                                saveTasks();
+                                renderTasks();
+                            }
+                        }
+                    });
+                    
+                    input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            input.blur();
+                        }
+                    });
+                    
+                    subtaskTextElem.replaceWith(input);
+                    input.focus();
+                });
+            });
+    
+            // In the createTaskElement function, add this after the taskTextSpan is defined
+            taskTextSpan.addEventListener('dblclick', () => {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = task.text;
+                input.className = 'task-text-edit';
+                
+                input.addEventListener('blur', () => {
+                    const newText = input.value.trim();
+                    if (newText) {
+                        task.text = newText;
+                        saveTasks();
+                        renderTasks();
+                    }
+                });
+                
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        input.blur();
+                    }
+                });
+                
+                taskTextSpan.replaceWith(input);
+                input.focus();
+            });
+    
+            return taskItem;
+        }
+    
+        // Helper functions for editing
+        function createEditInput(value, onSave) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = value;
+            input.className = 'task-text'; // Keep the same class for styling
+    
+            input.addEventListener('blur', () => onSave(input.value.trim()));
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    onSave(input.value.trim());
+                }
+            });
+            return input;
+        }
+    
+        function createPrioritySelect(currentPriority, onSave) {
+            const select = document.createElement('select');
+            select.className = 'priority-select';
+            select.innerHTML = `
+                <option value="low" ${currentPriority === 'low' ? 'selected' : ''}>Low</option>
+                <option value="medium" ${currentPriority === 'medium' ? 'selected' : ''}>Medium</option>
+                <option value="high" ${currentPriority === 'high' ? 'selected' : ''}>High</option>
+            `;
+            select.addEventListener('change', () => onSave(select.value));
+            return select;
+        }
+    
+        function createDateInput(currentDate, onSave) {
+            const input = document.createElement('input');
+            input.type = 'date';
+            input.value = currentDate || ''; // Handle null/undefined dates
+            input.className = "due-date-input";
+            input.addEventListener('change', () => onSave(input.value));
+            return input;
+        }
+    
+        function formatDate(dateString) {
+            if (!dateString) return ''; // Handle empty dates
+            const date = new Date(dateString);
+            return date.toLocaleDateString();
+        }
+    
+        function toggleComplete(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.completed = !task.completed;
+                saveTasks();
+                renderTasks();
+                updateStats();
+            }
+        }
+    
+        function deleteTask(taskId) {
+            tasks = tasks.filter(t => t.id !== taskId);
+            saveTasks();
+            renderTasks();
+            updateStats();
+        }
+    
+        function applyFilter(e) {
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            e.target.classList.add('active');
+            currentFilter = e.target.dataset.filter;
+            renderTasks();
+        }
+    
+        function updateStats() {
+            totalTasksSpan.textContent = `${tasks.length} ${tasks.length === 1 ? 'task' : 'tasks'}`;
+            const completed = tasks.filter(t => t.completed).length;
+            completedTasksSpan.textContent = `${completed} completed`;
+        }
+    
+        function clearInputs() {
+            taskInput.value = '';
+            prioritySelect.value = 'low';
+            dueDateInput.value = '';
+        }
+    
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+    
+        function loadTasks() {
+            return JSON.parse(localStorage.getItem('tasks')) || [];
+        }
+    
+        function toggleSubtaskComplete(taskId, subtaskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task && task.subtasks) {
+                const subtask = task.subtasks.find(st => st.id === subtaskId);
+                if (subtask) {
+                    subtask.completed = !subtask.completed;
+                    updateParentTaskCompletion(taskId);
+                    saveTasks();
+                    renderTasks();
+                }
+            }
+        }
+    
+        function deleteSubtask(taskId, subtaskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task && task.subtasks) {
+                task.subtasks = task.subtasks.filter(st => st.id !== subtaskId);
+                updateParentTaskCompletion(taskId);
+                saveTasks();
+                renderTasks();
+            }
+        }
+    
+        function updateParentTaskCompletion(taskId, skipRender = false) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+    
+            // Always recalculate completion status
+            const hadSubtasks = task.subtasks && task.subtasks.length > 0;
+            const newCompletedState = hadSubtasks 
+                ? task.subtasks.every(st => st.completed)
+                : false;
+    
+            // Only update if state changed
+            if (task.completed !== newCompletedState) {
+                task.completed = newCompletedState;
+                console.log(`Task ${taskId} completion changed to: ${task.completed}`);
+                
+                // Update DOM immediately if skipping full render
+                if (skipRender) {
+                    const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+                    if (taskElement) {
+                        taskElement.classList.toggle('completed', task.completed);
+                        const checkbox = taskElement.querySelector('.task-checkbox');
+                        if (checkbox) checkbox.checked = task.completed;
+                    }
+                }
+            }
+    
+            saveTasks();
+            if (!skipRender) {
+                renderTasks();
+            }
+        }
+    });</script>
+</body>
+</html>
