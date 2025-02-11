@@ -1810,7 +1810,6 @@ select::-ms-expand {
             }
         }
 
-        // Add this helper function to format date and time with hours and minutes
         function formatDateTimeShort(dateString) {
             if (!dateString) return '';
             const date = new Date(dateString);
@@ -1823,7 +1822,6 @@ select::-ms-expand {
             });
         }
 
-        // Keep the existing formatDateTime function for the tooltip
         function formatDateTime(dateString) {
             if (!dateString) return '';
             const date = new Date(dateString);
