@@ -854,6 +854,21 @@ body {
 #completed-tasks {
     color: var(--success);
 }
+
+/* Add these new styles */
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+
+.input-error {
+    animation: shake 0.3s ease-in-out;
+    border-color: var(--danger) !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2) !important;
+}
     </style>
 </head>
 <body>
@@ -1013,7 +1028,14 @@ body {
     
         function addTask() {
             const taskText = taskInput.value.trim();
-            if (!taskText) return;
+            if (!taskText) {
+                // Add error class and remove it after animation
+                taskInput.classList.add('input-error');
+                setTimeout(() => {
+                    taskInput.classList.remove('input-error');
+                }, 300);
+                return;
+            }
     
             const newTask = {
                 id: Date.now(),
@@ -1022,7 +1044,7 @@ body {
                 priority: prioritySelect.value,
                 dueDate: dueDateInput.value,
                 createdAt: new Date().toISOString(),
-                subtasks: [] // Initialize empty subtasks array
+                subtasks: []
             };
     
             tasks.unshift(newTask);
