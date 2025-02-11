@@ -2,7 +2,7 @@
 
 ![Task Manager Screenshot](screenshot.png) <!-- Add a screenshot if available -->
 
-[Live Demo](https://dylansallred.github.io/Task-Manager/Task-Manager..html)
+[Live Demo](https://dylansallred.github.io/Task-Manager/Task-Manager.html)
 
 A modern, feature-rich task management web application with priority levels, due dates, subtasks, and advanced filtering/sorting capabilities.
 
