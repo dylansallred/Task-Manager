@@ -67,11 +67,11 @@ body {
     gap: 1.5rem;
     color: var(--text-secondary);
     font-size: 0.9rem;
-    height: 25px;
 
 }
 .stats span{
     border-radius: 0.5rem;
+    padding: .3rem;
 }
 
 
@@ -79,7 +79,6 @@ body {
     display: grid;
     grid-template-columns: 1fr auto auto auto;
     gap: 0.5rem;
-    margin-bottom: 1rem;
 }
 
 #task-input,
@@ -126,7 +125,7 @@ body {
 .sort-wrapper {
     display: flex;
     gap: 0.5rem;
-    margin-bottom: .5rem;
+    margin: .5rem;
     align-items: center;
     flex-wrap: wrap;
 }
@@ -417,7 +416,8 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
     border-radius: 0.3rem;
-    width: fit-content;
+    width: 100%;
+    justify-content: space-between;
 }
 
 .subtask-item:hover {
@@ -542,6 +542,8 @@ body {
     display: flex;
     gap: 0.3rem;
     margin-left: 10px;
+    flex-shrink: 0;
+    align-items: center;
 }
 
 .edit-subtask-btn {
@@ -691,11 +693,13 @@ body {
 /* Add this to make input-area, filters, and search-container sticky */
 .sticky-top {
     position: sticky;
-    top: 0;
+    top: -2px;
     background: var(--background-secondary);
     z-index: 10;
     padding-top: 1rem;
     border-radius: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    margin-top: -2px;
 }
 
 /* Add this to the existing CSS */
@@ -826,6 +830,29 @@ body {
         rgba(16, 185, 129, 0.7), 
         transparent
     );
+}
+
+.subtask-text {
+    flex-grow: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.subtask-actions button {
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+#total-tasks {
+    color: var(--high-priority);
+}
+#completed-tasks {
+    color: var(--success);
 }
     </style>
 </head>
@@ -1134,6 +1161,11 @@ body {
                 prioritySpan.replaceWith(select);
                 select.focus();
     
+                // Add event listener to stop propagation on the select itself
+                select.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+    
                 select.addEventListener('blur', () => {
                     saveTasks();
                     renderTasks();
@@ -1153,6 +1185,11 @@ body {
                     input.focus();
                     setTimeout(() => input.showPicker(), 10);
     
+                    // Add event listener to stop propagation on the input itself
+                    input.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                    });
+    
                     input.addEventListener('blur', () => {
                         saveTasks();
                         renderTasks();
@@ -1169,6 +1206,11 @@ body {
                     });
                     dueDateSpan.replaceWith(input);
                     input.focus();
+    
+                    // Add event listener to stop propagation on the input itself
+                    input.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                    });
     
                     input.addEventListener('blur', () => {
                         saveTasks();
@@ -1463,13 +1505,16 @@ body {
     
             // Toggle collapse/expand on task click
             taskItem.addEventListener('click', (e) => {
-                // Don't collapse if clicking on inputs, buttons, checkboxes, or elements being edited
+                // Don't collapse if:
+                // 1. Clicking on inputs, buttons, checkboxes, or elements being edited
+                // 2. The subtask input is visible
                 if (e.target.tagName === 'INPUT' || 
                     e.target.tagName === 'BUTTON' || 
                     e.target.closest('.task-actions') ||
                     e.target.classList.contains('task-text') ||
                     e.target.classList.contains('priority') ||
-                    e.target.classList.contains('due-date')) {
+                    e.target.classList.contains('due-date') ||
+                    subtaskInputContainer.style.display === 'flex') {
                     return;
                 }
                 
@@ -1535,7 +1580,8 @@ body {
         function createDateInput(currentDate, onSave) {
             const input = document.createElement('input');
             input.type = 'date';
-            input.value = currentDate || ''; // Handle null/undefined dates
+            // Format the date correctly for the input field
+            input.value = currentDate ? formatDate(currentDate) : '';
             input.className = "due-date-input";
             input.addEventListener('change', () => onSave(input.value));
             return input;
@@ -1544,7 +1590,10 @@ body {
         function formatDate(dateString) {
             if (!dateString) return ''; // Handle empty dates
             const date = new Date(dateString);
-            return date.toLocaleDateString();
+            // Add the timezone offset to get the correct local date
+            const offset = date.getTimezoneOffset() * 60000;
+            const localDate = new Date(date.getTime() + offset);
+            return localDate.toISOString().split('T')[0];
         }
     
         function toggleComplete(taskId) {
