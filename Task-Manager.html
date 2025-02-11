@@ -321,7 +321,6 @@ body {
 .task-actions .edit-btn:hover { background: rgba(124, 58, 237, 0.1); color: var(--primary); }
 .completed .task-text { text-decoration: line-through; opacity: 0.7; }
 
-/* Modal Styles */
 .modal {
     display: none;
     position: fixed;
@@ -461,7 +460,7 @@ body {
     gap: 0.3rem;
     margin-top: 0.3rem;
     margin-top: 0.5rem;
-    display: none; /* Initially hidden */
+    display: none; 
 }
 
 .add-subtask-btn:hover {
@@ -698,13 +697,11 @@ body {
     margin-bottom: 0.5rem;
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
     .container { padding: 1rem; }
     .input-area { grid-template-columns: 1fr; }
 }
 
-/* Add this to make input-area, filters, and search-container sticky */
 .sticky-top {
     position: sticky;
     top: -2px;
@@ -716,7 +713,6 @@ body {
     margin-top: -2px;
 }
 
-/* Add this to the existing CSS */
 .task-item:hover .fa-chevron-up,
 .task-item:hover .fa-chevron-down {
     color: var(--primary);
@@ -724,13 +720,11 @@ body {
     transition: all 0.2s ease;
 }
 
-/* Add this to ensure smooth transitions */
 .fa-chevron-up,
 .fa-chevron-down {
     transition: all 0.2s ease;
 }
 
-/* Add these styles to enhance interactivity indicators */
 .task-text:hover {
     background: rgba(255, 255, 255, 0.03);
     border-radius: 0.3rem;
@@ -747,21 +741,18 @@ body {
     cursor: pointer;
 }
 
-/* Add subtle animations for the interactive elements */
 .task-text,
 .priority,
 .due-date {
     transition: all 0.2s ease;
 }
 
-/* Add a subtle glow effect on hover */
 .task-text:hover,
 .priority:hover,
 .due-date:hover {
     box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.1);
 }
 
-/* Add a more pronounced effect when editing is possible */
 .task-text[contenteditable="true"],
 .priority[contenteditable="true"],
 .due-date[contenteditable="true"] {
@@ -813,7 +804,6 @@ body {
     box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);
 }
 
-/* Update the pseudo-element gradients */
 .task-item.collapsed.low::after {
     background: linear-gradient(90deg, 
         transparent, 
@@ -869,7 +859,6 @@ body {
     color: var(--success);
 }
 
-/* Add these new styles */
 @keyframes shake {
     0% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
@@ -884,7 +873,6 @@ body {
     box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2) !important;
 }
 
-/* Add this to fix select elements */
 #priority-select, #modal-priority-select, #sort-select {
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -897,26 +885,22 @@ body {
     cursor: pointer;
 }
 
-/* Add hover and focus states */
 #priority-select:hover, #modal-priority-select:hover, #sort-select:hover,
 #priority-select:focus, #modal-priority-select:focus, #sort-select:focus {
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
 }
 
-/* Add this to style the options */
 #priority-select option, #modal-priority-select option, #sort-select option {
     background-color: var(--background);
     color: var(--text);
     padding: 0.5rem;
 }
 
-/* Add this to style the dropdown arrow */
 select::-ms-expand {
-    display: none; /* Remove default arrow in IE */
+    display: none; 
 }
 
-/* Add these styles for the added date */
 .added-date {
     background: rgba(255, 255, 255, 0.03);
     padding: 0.3rem 0.8rem;
@@ -941,7 +925,7 @@ select::-ms-expand {
             <h1><i class="fas fa-tasks"></i> Task Manager</h1>
         </div>
 
-        <!-- Wrap the elements that need to be sticky in a div -->
+
         <div class="sticky-top">
             <div class="input-area">
                 <input type="text" id="task-input" placeholder="What needs to be done?">
@@ -978,7 +962,6 @@ select::-ms-expand {
 
         <div id="task-list"></div>
 
-        <!-- Add this modal structure -->
         <div id="task-modal" class="modal">
             <div class="modal-content">
                 <div class="modal-header">
@@ -1045,7 +1028,6 @@ select::-ms-expand {
         const searchInput = document.getElementById('search-input');
         const clearSearchButton = document.getElementById('clear-search');
     
-        // Create sort select with a wrapper div
         const sortWrapper = document.createElement('div');
         sortWrapper.className = 'sort-wrapper';
         
@@ -1063,12 +1045,12 @@ select::-ms-expand {
             <option value="alphabetical">Alphabetical</option>
         `;
     
-        // Add the elements to the filters div
+
         const filtersDiv = document.querySelector('.filters');
-        const statsDiv = filtersDiv.querySelector('.stats');  // Get the stats div
+        const statsDiv = filtersDiv.querySelector('.stats');  
         sortWrapper.appendChild(sortLabel);
         sortWrapper.appendChild(sortSelect);
-        filtersDiv.insertBefore(sortWrapper, statsDiv);  // Insert before stats
+        filtersDiv.insertBefore(sortWrapper, statsDiv);  
     
         let tasks = loadTasks();
         let currentFilter = 'all';
@@ -1080,7 +1062,7 @@ select::-ms-expand {
         renderTasks();
         updateStats();
     
-        // Event Listeners
+
         addButton.addEventListener('click', addTask);
         taskInput.addEventListener('keypress', (e) => e.key === 'Enter' && addTask());
         filterButtons.forEach(btn => btn.addEventListener('click', applyFilter));
@@ -1135,11 +1117,11 @@ select::-ms-expand {
         function renderTasks() {
             taskList.innerHTML = '';
             let filteredTasks = tasks.filter(task => {
-                // First filter by current filter
+
                 if (currentFilter === 'active' && task.completed) return false;
                 if (currentFilter === 'completed' && !task.completed) return false;
                 
-                // Then filter by search query
+
                 if (searchQuery) {
                     const matchesText = task.text.toLowerCase().includes(searchQuery);
                     const matchesSubtasks = task.subtasks?.some(subtask => 
@@ -1150,7 +1132,7 @@ select::-ms-expand {
                 return true;
             });
     
-            // Sort tasks based on current sort option
+   
             filteredTasks.sort((a, b) => {
                 switch (currentSort) {
                     case 'newest':
@@ -1236,12 +1218,12 @@ select::-ms-expand {
             const saveSubtaskBtn = taskItem.querySelector('.save-subtask-btn');
             const cancelSubtaskBtn = taskItem.querySelector('.cancel-subtask-btn');
     
-            // Modify the task text display to highlight matches
+
             if (searchQuery) {
                 const regex = new RegExp(`(${searchQuery})`, 'gi');
                 taskTextSpan.innerHTML = task.text.replace(regex, '<span class="search-match">$1</span>');
                 
-                // Highlight matches in subtasks
+    
                 const subtaskItems = taskItem.querySelectorAll('.subtask-text');
                 subtaskItems.forEach(subtaskText => {
                     const subtask = task.subtasks.find(st => st.text === subtaskText.textContent);
@@ -1253,9 +1235,8 @@ select::-ms-expand {
                 taskTextSpan.textContent = task.text;
             }
     
-            // Double click to edit priority
             prioritySpan.addEventListener('dblclick', (e) => {
-                e.stopPropagation(); // Prevent the click event from bubbling up
+                e.stopPropagation();
                 const select = createPrioritySelect(task.priority, (newValue) => {
                     task.priority = newValue;
                     saveTasks();
@@ -1264,7 +1245,6 @@ select::-ms-expand {
                 prioritySpan.replaceWith(select);
                 select.focus();
     
-                // Add event listener to stop propagation on the select itself
                 select.addEventListener('click', (e) => {
                     e.stopPropagation();
                 });
@@ -1275,10 +1255,10 @@ select::-ms-expand {
                 });
             });
     
-            // Single click to add date when none exists
+            
             if (!task.dueDate) {
                 dueDateSpan.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent the click event from bubbling up
+                    e.stopPropagation();
                     const input = createDateInput('', (newValue) => {
                         task.dueDate = newValue;
                         saveTasks();
@@ -1288,7 +1268,7 @@ select::-ms-expand {
                     input.focus();
                     setTimeout(() => input.showPicker(), 10);
     
-                    // Add event listener to stop propagation on the input itself
+
                     input.addEventListener('click', (e) => {
                         e.stopPropagation();
                     });
@@ -1299,9 +1279,9 @@ select::-ms-expand {
                     });
                 });
             } else {
-                // Double click to edit existing date
+     
                 dueDateSpan.addEventListener('dblclick', (e) => {
-                    e.stopPropagation(); // Prevent the click event from bubbling up
+                    e.stopPropagation();
                     const input = createDateInput(task.dueDate, (newValue) => {
                         task.dueDate = newValue;
                         saveTasks();
@@ -1310,7 +1290,7 @@ select::-ms-expand {
                     dueDateSpan.replaceWith(input);
                     input.focus();
     
-                    // Add event listener to stop propagation on the input itself
+             
                     input.addEventListener('click', (e) => {
                         e.stopPropagation();
                     });
@@ -1322,11 +1302,11 @@ select::-ms-expand {
                 });
             }
     
-            // Event listeners
+        
             checkbox.addEventListener('change', () => toggleComplete(task.id));
             deleteBtn.addEventListener('click', () => deleteTask(task.id));
     
-            // Subtask functionality
+
             addSubtaskBtn.addEventListener('click', () => {
                 openSubtaskTaskId = task.id;
                 addSubtaskBtn.style.display = 'none';
@@ -1336,25 +1316,24 @@ select::-ms-expand {
     
             function saveSubtask(keepOpen = false) {
                 const subtaskText = subtaskInput.value.trim();
-                //console.log("saveSubtask called, keepOpen:", keepOpen); // Debug 1
+
     
                 if (subtaskText) {
                     if (!task.subtasks) task.subtasks = [];
                     const newSubtaskId = Date.now();
-                    const newSubtask = {  // Create the subtask object
+                    const newSubtask = {  
                         id: newSubtaskId,
                         text: subtaskText,
                         completed: false
                     };
-                    task.subtasks.push(newSubtask); // Add to the task's subtasks array
-                    //console.log("New subtask added:", newSubtask); // Debug 2
+                    task.subtasks.push(newSubtask); 
     
                     subtaskInput.value = '';
     
                     if (keepOpen) {
-                        //console.log("keepOpen is true"); // Debug 3
+                       
                         const subtasksList = taskItem.querySelector('.subtasks-list');
-                        const newSubtaskElement = document.createElement('div'); // Create the DOM element
+                        const newSubtaskElement = document.createElement('div');
                         newSubtaskElement.className = `subtask-item`;
                         newSubtaskElement.dataset.subtaskId = newSubtaskId;
                         newSubtaskElement.innerHTML = `
@@ -1365,18 +1344,17 @@ select::-ms-expand {
                                 <button class="delete-subtask-btn" title="Delete"><i class="fas fa-times"></i></button>
                             </div>
                         `;
-                        subtasksList.appendChild(newSubtaskElement); // Add to the DOM
+                        subtasksList.appendChild(newSubtaskElement);
     
-                        // If this is the first subtask added, add collapse arrow to the task element.
                         if (task.subtasks.length === 1 && !taskItem.querySelector('.task-details i.fas')) {
                             const taskDetails = taskItem.querySelector('.task-details');
                             const collapseIcon = document.createElement('i');
-                            collapseIcon.className = 'fas fa-chevron-up'; // initial expanded state
+                            collapseIcon.className = 'fas fa-chevron-up';
                             collapseIcon.style.padding = '0 0.5rem';
                             collapseIcon.style.cursor = 'pointer';
                             taskDetails.prepend(collapseIcon);
 
-                            // Attach collapse toggle handler to the task.
+                
                             taskItem.addEventListener('click', (e) => {
                                 if (
                                     e.target.tagName === 'INPUT' || 
@@ -1394,7 +1372,7 @@ select::-ms-expand {
                                 taskItem.classList.toggle('collapsed', !isCollapsed);
                                 collapseIcon.className = `fas ${isCollapsed ? 'fa-chevron-up' : 'fa-chevron-down'}`;
                                 
-                                // Update the task's collapsed state in the tasks array
+                     
                                 task.collapsed = !isCollapsed;
                                 saveTasks();
                                 
@@ -1402,29 +1380,29 @@ select::-ms-expand {
                             });
                         }
     
-                        // Add event listeners to the new subtask *element*
+     
                         const subtaskTextElem = newSubtaskElement.querySelector('.subtask-text');
                         const subtaskCheckbox = newSubtaskElement.querySelector('.subtask-checkbox');
                         const deleteBtn = newSubtaskElement.querySelector('.delete-subtask-btn');
                         const editBtn = newSubtaskElement.querySelector('.edit-subtask-btn');
     
-                        // Checkbox and text click handlers
+                   
                         newSubtaskElement.addEventListener('click', (event) => {
-                            // Prevent event from bubbling up to the parent task item
+                           
                             event.stopPropagation();
     
-                            // Only toggle if the click wasn't on the edit/delete buttons
+  
                             if (!event.target.closest('.subtask-actions')) {
                                 toggleSubtaskComplete(task.id, newSubtaskId);
                             }
                         });
     
-                        // Delete button handler
+        
                         deleteBtn.addEventListener('click', () => {
                             deleteSubtask(task.id, newSubtaskId);
                         });
     
-                        // Edit button handler
+           
                         editBtn.addEventListener('click', (e) => {
                             const subtaskItem = e.target.closest('.subtask-item');
                             subtaskItem.classList.add('editing');
@@ -1461,27 +1439,24 @@ select::-ms-expand {
                             input.focus();
                         });
     
-                        //  Update parent task completion *AFTER* adding to the DOM.
-                        updateParentTaskCompletion(task.id, true);  // Add true to skip render
-                        //console.log("Parent task updated and saved (keepOpen).");
-    
-                        // Maintain focus on the input
+                        updateParentTaskCompletion(task.id, true); 
+
                         setTimeout(() => {
                             subtaskInput.focus();
-                            //console.log("Refocused subtask input"); // Debug 8
+
                         }, 0);
     
                     } else {
-                        console.log("keepOpen is false"); // Debug 5
+                        console.log("keepOpen is false");
                         openSubtaskTaskId = null;
                         hideSubtaskInput();
                         updateParentTaskCompletion(task.id, false);
-                        saveTasks(); // Save after updating
-                        renderTasks(); // Re-render the entire list
-                        //console.log("Parent task updated, saved, and rendered."); // Debug 6
+                        saveTasks(); 
+                        renderTasks(); 
+                
                     }
                 } else if (!keepOpen) {
-                    //console.log("Subtask text empty and keepOpen is false"); // Debug 7
+
                     hideSubtaskInput();
                 }
             }
@@ -1537,12 +1512,12 @@ select::-ms-expand {
             const subtaskItems = taskItem.querySelectorAll('.subtask-item');
             subtaskItems.forEach(item => {
                 item.addEventListener('click', (event) => {
-                    // Prevent event from bubbling up to the parent task item
+        
                     event.stopPropagation();
     
                     const subtaskId = parseInt(item.dataset.subtaskId);
     
-                    // Only toggle if the click wasn't on the edit/delete buttons
+
                     if (!event.target.closest('.subtask-actions')) {
                         toggleSubtaskComplete(task.id, subtaskId);
                     }
@@ -1592,9 +1567,8 @@ select::-ms-expand {
                 });
             });
     
-            // In the createTaskElement function, add this after the taskTextSpan is defined
             taskTextSpan.addEventListener('dblclick', (e) => {
-                e.stopPropagation(); // Prevent the click event from bubbling up
+                e.stopPropagation(); 
                 const input = document.createElement('input');
                 input.type = 'text';
                 input.value = task.text;
@@ -1619,15 +1593,12 @@ select::-ms-expand {
                 input.focus();
             });
     
-            // Add collapse state from localStorage
             const subtasksSection = taskItem.querySelector('.subtasks-section');
             const taskContent = taskItem.querySelector('.task-content');
     
-            // New flag to determine if the task has any subtasks
             const hasSubtasks = task.subtasks && task.subtasks.length > 0;
 
             if (hasSubtasks) {
-                // Use the task's collapsed property instead of localStorage
                 const isCollapsed = task.completed || task.collapsed;
                 if (isCollapsed) {
                     subtasksSection.style.display = 'none';
@@ -1643,7 +1614,6 @@ select::-ms-expand {
                 collapseIcon.style.cursor = 'pointer';
                 taskDetails.prepend(collapseIcon);
                 
-                // Add collapse toggle only when there are subtasks
                 taskItem.addEventListener('click', (e) => {
                     if (
                         e.target.tagName === 'INPUT' || 
@@ -1662,41 +1632,35 @@ select::-ms-expand {
                     taskItem.classList.toggle('collapsed', !isCollapsed);
                     collapseIcon.className = `fas ${isCollapsed ? 'fa-chevron-up' : 'fa-chevron-down'}`;
                     
-                    // Update the task's collapsed state in the tasks array
                     task.collapsed = !isCollapsed;
                     saveTasks();
                     
                     addSubtaskBtn.style.display = isCollapsed ? 'block' : 'none';
                 });
             } else {
-                // No subtasks: always show the section (and no collapse arrow is added)
                 subtasksSection.style.display = 'block';
             }
             
-            // Always show the "Add Subtask" button when no subtasks exist
             addSubtaskBtn.style.display = 'block';
     
-            // In the createTaskElement function, modify the event listeners for the subtask actions
             taskItem.querySelectorAll('.subtask-input-actions button').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
                 });
             });
     
-            // Also add stopPropagation to the subtask input itself
             subtaskInput.addEventListener('click', (e) => {
                 e.stopPropagation();
             });
     
             return taskItem;
         }
-    
-        // Helper functions for editing
+   
         function createEditInput(value, onSave) {
             const input = document.createElement('input');
             input.type = 'text';
             input.value = value;
-            input.className = 'task-text'; // Keep the same class for styling
+            input.className = 'task-text'; 
     
             input.addEventListener('blur', () => onSave(input.value.trim()));
             input.addEventListener('keypress', (e) => {
@@ -1722,7 +1686,7 @@ select::-ms-expand {
         function createDateInput(currentDate, onSave) {
             const input = document.createElement('input');
             input.type = 'date';
-            // Format the date correctly for the input field
+
             input.value = currentDate ? formatDate(currentDate) : '';
             input.className = "due-date-input";
             input.addEventListener('change', () => onSave(input.value));
@@ -1730,9 +1694,9 @@ select::-ms-expand {
         }
     
         function formatDate(dateString) {
-            if (!dateString) return ''; // Handle empty dates
+            if (!dateString) return ''; 
             const date = new Date(dateString);
-            // Add the timezone offset to get the correct local date
+
             const offset = date.getTimezoneOffset() * 60000;
             const localDate = new Date(date.getTime() + offset);
             return localDate.toISOString().split('T')[0];
@@ -1743,7 +1707,7 @@ select::-ms-expand {
             if (task) {
                 task.completed = !task.completed;
                 if (task.completed) {
-                    task.collapsed = true;  // Set collapsed state directly on task
+                    task.collapsed = true;  
                 } else {
                     task.collapsed = false;
                 }
