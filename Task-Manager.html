@@ -64,16 +64,26 @@ body {
 .stats {
     margin: auto;
     display: flex;
-    gap: 1.5rem;
     color: var(--text-secondary);
     font-size: 0.9rem;
-
+    align-items: center;
 }
-.stats span{
+
+.stats span {
     border-radius: 0.5rem;
-    padding: .3rem;
+    padding: 0.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
 }
 
+.stats .completed {
+    color: var(--success);
+}
+
+.stats .total {
+    color: var(--text);
+}
 
 .input-area {
     display: grid;
@@ -86,11 +96,12 @@ body {
 #due-date {
     padding: 0.5rem;
     background: var(--background);
-    border: 2px solid #3d3d3d;
+    border: 1px solid #3d3d3d;
     border-radius: 0.5rem;
     color: var(--text);
     font-size: .85rem;
     transition: all 0.2s ease;
+    color-scheme: dark;
 }
 
 #task-input:focus,
@@ -164,12 +175,10 @@ body {
     position: relative;
     cursor: pointer;
     border-bottom: 2px solid transparent;
-    transition: border-color 0.3s ease;
 }
 
 .task-item:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 8px 0px rgba(0, 0, 0, 0.2), inset 0px 0px 10px 3px rgb(17 17 17);
     scale: 1.01;
 }
 
@@ -265,6 +274,11 @@ body {
 .due-date {
     background: rgba(255, 255, 255, 0.03);
     transition: all 0.2s ease;
+    color-scheme: dark;
+}
+
+.due-date-input{
+    color-scheme: dark;
 }
 
 .due-date:hover {
@@ -509,7 +523,7 @@ body {
 #sort-select {
     padding: 0.5rem;
     background: var(--background);
-    border: 2px solid #3d3d3d;
+    border: 1px solid #3d3d3d;
     border-radius: 0.5rem;
     color: var(--text);
     cursor: pointer;
@@ -580,7 +594,7 @@ body {
     flex-grow: 1;
     padding: 0.8rem 1rem;
     background: var(--background);
-    border: 2px solid #3d3d3d;
+    border: 1px solid #3d3d3d;
     border-radius: 0.5rem;
     color: var(--text);
     font-size: 1rem;
@@ -869,6 +883,56 @@ body {
     border-color: var(--danger) !important;
     box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2) !important;
 }
+
+/* Add this to fix select elements */
+#priority-select, #modal-priority-select, #sort-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 1rem;
+    padding-right: 2rem;
+    cursor: pointer;
+}
+
+/* Add hover and focus states */
+#priority-select:hover, #modal-priority-select:hover, #sort-select:hover,
+#priority-select:focus, #modal-priority-select:focus, #sort-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+}
+
+/* Add this to style the options */
+#priority-select option, #modal-priority-select option, #sort-select option {
+    background-color: var(--background);
+    color: var(--text);
+    padding: 0.5rem;
+}
+
+/* Add this to style the dropdown arrow */
+select::-ms-expand {
+    display: none; /* Remove default arrow in IE */
+}
+
+/* Add these styles for the added date */
+.added-date {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.3rem 0.8rem;
+    border-radius: 1rem;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.added-date:hover {
+    background: rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+}
     </style>
 </head>
 <body>
@@ -897,8 +961,10 @@ body {
                 <button class="filter-btn" data-filter="active">Active</button>
                 <button class="filter-btn" data-filter="completed">Completed</button>
                 <div class="stats">
-                    <span id="total-tasks">0 tasks</span>
-                    <span id="completed-tasks">0 completed</span>
+                    <span class="completed" id="completed-tasks">0</span>
+                    <span>/</span>
+                    <span class="total" id="total-tasks">0</span>
+                    <span>tasks completed</span>
                 </div>
             </div>
 
@@ -955,7 +1021,19 @@ body {
         </div>
     </div>
 
-    <script>document.addEventListener('DOMContentLoaded', function() {
+    <script>
+    const generateUniqueKey = () => {
+        const randomId = Math.random().toString(36).substring(2, 15);
+        return `tasks_${randomId}`;
+    };
+
+    let storageKey = localStorage.getItem('taskManagerKey');
+    if (!storageKey) {
+        storageKey = generateUniqueKey();
+        localStorage.setItem('taskManagerKey', storageKey);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
         const taskInput = document.getElementById('task-input');
         const addButton = document.getElementById('add-button');
         const taskList = document.getElementById('task-list');
@@ -1029,7 +1107,6 @@ body {
         function addTask() {
             const taskText = taskInput.value.trim();
             if (!taskText) {
-                // Add error class and remove it after animation
                 taskInput.classList.add('input-error');
                 setTimeout(() => {
                     taskInput.classList.remove('input-error');
@@ -1044,7 +1121,8 @@ body {
                 priority: prioritySelect.value,
                 dueDate: dueDateInput.value,
                 createdAt: new Date().toISOString(),
-                subtasks: []
+                subtasks: [],
+                collapsed: false
             };
     
             tasks.unshift(newTask);
@@ -1112,7 +1190,10 @@ body {
                         <div class="task-details">
                             <span class="priority ${task.priority}">${task.priority}</span>
                             <span class="due-date">
-                                ${task.dueDate ? `<i class="far fa-calendar-alt"></i> ${formatDate(task.dueDate)}` : '<i class="far fa-calendar-alt"></i> Add Date'}
+                                ${task.dueDate ? `<i class="far fa-calendar-alt"></i> ${formatDate(task.dueDate)}` : '<i class="far fa-calendar-alt"></i> Due Date'}
+                            </span>
+                            <span class="added-date" title="Added on ${formatDateTime(task.createdAt)}">
+                                <i class="fas fa-plus"></i> ${formatDateTimeShort(task.createdAt)}
                             </span>
                         </div>
                     </div>
@@ -1255,7 +1336,7 @@ body {
     
             function saveSubtask(keepOpen = false) {
                 const subtaskText = subtaskInput.value.trim();
-                console.log("saveSubtask called, keepOpen:", keepOpen); // Debug 1
+                //console.log("saveSubtask called, keepOpen:", keepOpen); // Debug 1
     
                 if (subtaskText) {
                     if (!task.subtasks) task.subtasks = [];
@@ -1266,12 +1347,12 @@ body {
                         completed: false
                     };
                     task.subtasks.push(newSubtask); // Add to the task's subtasks array
-                    console.log("New subtask added:", newSubtask); // Debug 2
+                    //console.log("New subtask added:", newSubtask); // Debug 2
     
                     subtaskInput.value = '';
     
                     if (keepOpen) {
-                        console.log("keepOpen is true"); // Debug 3
+                        //console.log("keepOpen is true"); // Debug 3
                         const subtasksList = taskItem.querySelector('.subtasks-list');
                         const newSubtaskElement = document.createElement('div'); // Create the DOM element
                         newSubtaskElement.className = `subtask-item`;
@@ -1285,6 +1366,41 @@ body {
                             </div>
                         `;
                         subtasksList.appendChild(newSubtaskElement); // Add to the DOM
+    
+                        // If this is the first subtask added, add collapse arrow to the task element.
+                        if (task.subtasks.length === 1 && !taskItem.querySelector('.task-details i.fas')) {
+                            const taskDetails = taskItem.querySelector('.task-details');
+                            const collapseIcon = document.createElement('i');
+                            collapseIcon.className = 'fas fa-chevron-up'; // initial expanded state
+                            collapseIcon.style.padding = '0 0.5rem';
+                            collapseIcon.style.cursor = 'pointer';
+                            taskDetails.prepend(collapseIcon);
+
+                            // Attach collapse toggle handler to the task.
+                            taskItem.addEventListener('click', (e) => {
+                                if (
+                                    e.target.tagName === 'INPUT' || 
+                                    e.target.tagName === 'BUTTON' || 
+                                    e.target.closest('.task-actions') ||
+                                    e.target.classList.contains('task-text') ||
+                                    e.target.classList.contains('priority') ||
+                                    e.target.classList.contains('due-date') ||
+                                    subtaskInputContainer.style.display === 'flex'
+                                ) {
+                                    return;
+                                }
+                                const isCollapsed = subtasksSection.style.display === 'none';
+                                subtasksSection.style.display = isCollapsed ? 'block' : 'none';
+                                taskItem.classList.toggle('collapsed', !isCollapsed);
+                                collapseIcon.className = `fas ${isCollapsed ? 'fa-chevron-up' : 'fa-chevron-down'}`;
+                                
+                                // Update the task's collapsed state in the tasks array
+                                task.collapsed = !isCollapsed;
+                                saveTasks();
+                                
+                                addSubtaskBtn.style.display = isCollapsed ? 'block' : 'none';
+                            });
+                        }
     
                         // Add event listeners to the new subtask *element*
                         const subtaskTextElem = newSubtaskElement.querySelector('.subtask-text');
@@ -1347,12 +1463,12 @@ body {
     
                         //  Update parent task completion *AFTER* adding to the DOM.
                         updateParentTaskCompletion(task.id, true);  // Add true to skip render
-                        console.log("Parent task updated and saved (keepOpen).");
+                        //console.log("Parent task updated and saved (keepOpen).");
     
                         // Maintain focus on the input
                         setTimeout(() => {
                             subtaskInput.focus();
-                            console.log("Refocused subtask input"); // Debug 8
+                            //console.log("Refocused subtask input"); // Debug 8
                         }, 0);
     
                     } else {
@@ -1362,10 +1478,10 @@ body {
                         updateParentTaskCompletion(task.id, false);
                         saveTasks(); // Save after updating
                         renderTasks(); // Re-render the entire list
-                        console.log("Parent task updated, saved, and rendered."); // Debug 6
+                        //console.log("Parent task updated, saved, and rendered."); // Debug 6
                     }
                 } else if (!keepOpen) {
-                    console.log("Subtask text empty and keepOpen is false"); // Debug 7
+                    //console.log("Subtask text empty and keepOpen is false"); // Debug 7
                     hideSubtaskInput();
                 }
             }
@@ -1507,54 +1623,58 @@ body {
             const subtasksSection = taskItem.querySelector('.subtasks-section');
             const taskContent = taskItem.querySelector('.task-content');
     
-            // Add collapse state from localStorage
-            const collapseState = localStorage.getItem(`task_${task.id}_collapsed`);
-            if (collapseState === 'true') {
-                subtasksSection.style.display = 'none';
-                taskItem.classList.add('collapsed');
-            } else {
-                addSubtaskBtn.style.display = 'block';
-            }
-    
-            // Add arrow icon after task-details
-            const taskDetails = taskItem.querySelector('.task-details');
-            const collapseIcon = document.createElement('i');
-            collapseIcon.className = `fas ${collapseState === 'true' ? 'fa-chevron-down' : 'fa-chevron-up'}`;
-            collapseIcon.style.marginLeft = 'auto';
-            collapseIcon.style.padding = '0 0.5rem';
-            collapseIcon.style.cursor = 'pointer';
-            taskDetails.appendChild(collapseIcon);
-    
-            // Toggle collapse/expand on task click
-            taskItem.addEventListener('click', (e) => {
-                // Don't collapse if:
-                // 1. Clicking on inputs, buttons, checkboxes, or elements being edited
-                // 2. The subtask input is visible
-                if (e.target.tagName === 'INPUT' || 
-                    e.target.tagName === 'BUTTON' || 
-                    e.target.closest('.task-actions') ||
-                    e.target.classList.contains('task-text') ||
-                    e.target.classList.contains('priority') ||
-                    e.target.classList.contains('due-date') ||
-                    subtaskInputContainer.style.display === 'flex') {
-                    return;
+            // New flag to determine if the task has any subtasks
+            const hasSubtasks = task.subtasks && task.subtasks.length > 0;
+
+            if (hasSubtasks) {
+                // Use the task's collapsed property instead of localStorage
+                const isCollapsed = task.completed || task.collapsed;
+                if (isCollapsed) {
+                    subtasksSection.style.display = 'none';
+                    taskItem.classList.add('collapsed');
+                } else {
+                    subtasksSection.style.display = 'block';
                 }
                 
-                const isCollapsed = subtasksSection.style.display === 'none';
-                subtasksSection.style.display = isCollapsed ? 'block' : 'none';
-                taskItem.classList.toggle('collapsed', !isCollapsed);
-                collapseIcon.className = `fas ${isCollapsed ? 'fa-chevron-up' : 'fa-chevron-down'}`;
-                localStorage.setItem(`task_${task.id}_collapsed`, !isCollapsed);
-                addSubtaskBtn.style.display = isCollapsed ? 'block' : 'none';
-            });
-    
-            // Add this after creating the collapse icon
-            if (task.subtasks && task.subtasks.length > 0) {
-                addSubtaskBtn.style.display = 'block';
+                const taskDetails = taskItem.querySelector('.task-details');
+                const collapseIcon = document.createElement('i');
+                collapseIcon.className = `fas ${isCollapsed ? 'fa-chevron-down' : 'fa-chevron-up'}`;
+                collapseIcon.style.padding = '0 0.5rem';
+                collapseIcon.style.cursor = 'pointer';
+                taskDetails.prepend(collapseIcon);
+                
+                // Add collapse toggle only when there are subtasks
+                taskItem.addEventListener('click', (e) => {
+                    if (
+                        e.target.tagName === 'INPUT' || 
+                        e.target.tagName === 'BUTTON' || 
+                        e.target.closest('.task-actions') ||
+                        e.target.classList.contains('task-text') ||
+                        e.target.classList.contains('priority') ||
+                        e.target.classList.contains('due-date') ||
+                        subtaskInputContainer.style.display === 'flex'
+                    ) {
+                        return;
+                    }
+                    
+                    const isCollapsed = subtasksSection.style.display === 'none';
+                    subtasksSection.style.display = isCollapsed ? 'block' : 'none';
+                    taskItem.classList.toggle('collapsed', !isCollapsed);
+                    collapseIcon.className = `fas ${isCollapsed ? 'fa-chevron-up' : 'fa-chevron-down'}`;
+                    
+                    // Update the task's collapsed state in the tasks array
+                    task.collapsed = !isCollapsed;
+                    saveTasks();
+                    
+                    addSubtaskBtn.style.display = isCollapsed ? 'block' : 'none';
+                });
             } else {
-                // For new tasks or tasks without subtasks, show button if expanded
-                addSubtaskBtn.style.display = collapseState === 'true' ? 'none' : 'block';
+                // No subtasks: always show the section (and no collapse arrow is added)
+                subtasksSection.style.display = 'block';
             }
+            
+            // Always show the "Add Subtask" button when no subtasks exist
+            addSubtaskBtn.style.display = 'block';
     
             // In the createTaskElement function, modify the event listeners for the subtask actions
             taskItem.querySelectorAll('.subtask-input-actions button').forEach(btn => {
@@ -1622,6 +1742,11 @@ body {
             const task = tasks.find(t => t.id === taskId);
             if (task) {
                 task.completed = !task.completed;
+                if (task.completed) {
+                    task.collapsed = true;  // Set collapsed state directly on task
+                } else {
+                    task.collapsed = false;
+                }
                 saveTasks();
                 renderTasks();
                 updateStats();
@@ -1643,9 +1768,10 @@ body {
         }
     
         function updateStats() {
-            totalTasksSpan.textContent = `${tasks.length} ${tasks.length === 1 ? 'task' : 'tasks'}`;
+            const total = tasks.length;
             const completed = tasks.filter(t => t.completed).length;
-            completedTasksSpan.textContent = `${completed} completed`;
+            totalTasksSpan.textContent = total;
+            completedTasksSpan.textContent = completed;
         }
     
         function clearInputs() {
@@ -1655,11 +1781,18 @@ body {
         }
     
         function saveTasks() {
-            localStorage.setItem('tasks', JSON.stringify(tasks));
+            localStorage.setItem(storageKey, JSON.stringify(tasks));
         }
     
         function loadTasks() {
-            return JSON.parse(localStorage.getItem('tasks')) || [];
+            const tasks = JSON.parse(localStorage.getItem(storageKey)) || [];
+            // Ensure all tasks have the collapsed property
+            tasks.forEach(task => {
+                if (task.collapsed === undefined) {
+                    task.collapsed = task.completed;
+                }
+            });
+            return tasks;
         }
     
         function toggleSubtaskComplete(taskId, subtaskId) {
@@ -1689,18 +1822,14 @@ body {
             const task = tasks.find(t => t.id === taskId);
             if (!task) return;
     
-            // Always recalculate completion status
             const hadSubtasks = task.subtasks && task.subtasks.length > 0;
             const newCompletedState = hadSubtasks 
                 ? task.subtasks.every(st => st.completed)
                 : false;
     
-            // Only update if state changed
             if (task.completed !== newCompletedState) {
                 task.completed = newCompletedState;
-                console.log(`Task ${taskId} completion changed to: ${task.completed}`);
                 
-                // Update DOM immediately if skipping full render
                 if (skipRender) {
                     const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
                     if (taskElement) {
@@ -1716,6 +1845,34 @@ body {
                 renderTasks();
             }
         }
-    });</script>
+
+        // Add this helper function to format date and time with hours and minutes
+        function formatDateTimeShort(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true
+            });
+        }
+
+        // Keep the existing formatDateTime function for the tooltip
+        function formatDateTime(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true
+            });
+        }
+    });
+    </script>
 </body>
 </html>
