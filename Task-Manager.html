@@ -938,6 +938,10 @@ select::-ms-expand {
                 <button id="add-button" class="glow-button">
                     <i class="fas fa-plus"></i> Add Task
                 </button>
+                <!-- Add Test Data Button -->
+                <button id="add-test-data" class="glow-button" style="background: linear-gradient(135deg, #8b5cf6, #4f46e5);">
+                    <i class="fas fa-vial"></i> Add Test Tasks
+                </button>
             </div>
 
             <div class="filters">
@@ -1834,6 +1838,66 @@ select::-ms-expand {
                 hour12: true
             });
         }
+
+        function addTestTasks() {
+            const baseId = Date.now(); // Get a base timestamp to work from
+            let idCounter = 0;
+
+            const funnyTasks = [
+                {
+                    text: "Defeat the Laundry Volcano erupting in my closet",
+                    priority: "high",
+                    dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+                    subtasks: [
+                        { id: baseId + idCounter++, text: "Find matching socks (mission impossible)", completed: false },
+                        { id: baseId + idCounter++, text: "Negotiate with shirt wrinkle rebels", completed: false }
+                    ]
+                },
+                {
+                    text: "Train goldfish to do synchronized swimming",
+                    priority: "medium",
+                    dueDate: new Date(Date.now() + 259200000).toISOString().split('T')[0],
+                    subtasks: [
+                        { id: baseId + idCounter++, text: "Buy tiny underwater LED lights", completed: false },
+                        { id: baseId + idCounter++, text: "Create fish-sized podium for medal ceremony", completed: false }
+                    ]
+                },
+                {
+                    text: "Invent self-cleaning coffee mug that also does stand-up comedy",
+                    priority: "low",
+                    dueDate: new Date(Date.now() + 604800000).toISOString().split('T')[0],
+                    subtasks: [
+                        { id: baseId + idCounter++, text: "Research why coffee mugs always develop personality", completed: false },
+                        { id: baseId + idCounter++, text: "Test joke: 'Why did the coffee file a police report? It got mugged!'", completed: true }
+                    ]
+                },
+                {
+                    text: "Convince cat that 3AM is not taco time",
+                    priority: "high",
+                    dueDate: new Date(Date.now() + 172800000).toISOString().split('T')[0],
+                    subtasks: [
+                        { id: baseId + idCounter++, text: "Create PowerPoint presentation on feline nutrition schedules", completed: false },
+                        { id: baseId + idCounter++, text: "Practice 'disappointed parent' look for negotiations", completed: false }
+                    ]
+                }
+            ];
+
+            funnyTasks.forEach((task, index) => {
+                tasks.unshift({
+                    id: baseId + idCounter++, // Unique task ID
+                    completed: false,
+                    createdAt: new Date().toISOString(),
+                    collapsed: false,
+                    ...task
+                });
+            });
+
+            saveTasks();
+            renderTasks();
+            updateStats();
+        }
+
+        document.getElementById('add-test-data').addEventListener('click', addTestTasks);
     });
     </script>
 </body>
