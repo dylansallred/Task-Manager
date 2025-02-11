@@ -1,6 +1,6 @@
 # Task Manager Application
 
-![Task Manager Screenshot](screenshot.png) <!-- Add a screenshot if available -->
+![Task Manager Screenshot](Task-Manager.png) <!-- Add a screenshot if available -->
 
 [Live Demo](https://dylansallred.github.io/Task-Manager/Task-Manager.html)
 
